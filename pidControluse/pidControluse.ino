@@ -167,9 +167,9 @@ void setup() {
   Serial.println("\n\n\n");
   Serial.println("Ready.");
 
-   // final code will call articulation system. testing sometimes requires other behavior
- //startCarriageMotor();
-// articulationSystemBackward();
+ // final code will call articulation system. testing sometimes requires other behavior
+ // startCarriageMotor();
+ // articulationSystemBackward();
  activateTorqueMotor();
 }
 
