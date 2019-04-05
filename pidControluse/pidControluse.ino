@@ -18,10 +18,15 @@
 #define CLOCKWISE            1       // direction constant
 #define COUNTER_CLOCKWISE    2       // direction constant
 #define REVOLUTIONS          10      // 30 = a distance of 2 inches
-#define RPM                  30      // for carriage motor speed
+#define CRPM                 30      // for carriage motor speed
+#define TRPM                 50      // for torque motor speed
+#define SRPM                 200     // for stepper motor speed
+#define DELAYMILLI           250     // set millisecond delay (used for torque and carriage)
+#define DELAYMCRO            10      // set microsecond delay (used for stepper)
 #define MAPval               45      // forgiving precision for encoder that maps 0 - 2000 to 0 - MAPval
-#define CPR                  2000  // Encoder Cycles per revolution.
-
+#define CPR                  2000    // Encoder Cycles per revolution.
+#define STOP                 0       
+#define SAMPLETIME           1       // set sample time to refresh PID in milliseconds
 // next is a control variable that is used as a bounds check for the position array
 short next = 0; 
 // scale each bolt location to allow a threshold greater than one degree precision 
@@ -73,32 +78,32 @@ CytronMD carriageMotor(PWM_DIR, 9, 10);  // PWM = Pin 9, DIR = Pin 10.
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 35, 37, 39, 41);
 
-//void articulationSystemForward()
-//{
-//  
-//  myStepper.setSpeed(200);
-//  Serial.println("Articulation System Activated yeeaaaaaa");
-//  for(int i = 0; i < REVOLUTIONS; i++)
-//  {
-//  
-//    myStepper.step(stepsPerRevolution);
-//    delayMicroseconds(10);
-//  }
+void articulationSystemForward()
+{
+  
+  myStepper.setSpeed(SRPM);
+  Serial.println("Articulation System Activated yeeaaaaaa");
+  for(int i = 0; i < REVOLUTIONS; i++)
+  {
+  
+    myStepper.step(stepsPerRevolution);
+    delayMicroseconds(DELAYMCRO);
+  }
 
-//activateTorqueMotor();
-//}
+activateTorqueMotor();
+}
 void articulationSystemBackward()
 {
   Serial.println("/n Articulation System Activated /n");
-  // set the speed at 60 rpm:
-  myStepper.setSpeed(200);
+  
+  myStepper.setSpeed(SRPM);
   for(int i = 0; i < REVOLUTIONS; i++)
   {
           myStepper.step(-stepsPerRevolution);
-          delayMicroseconds(10);
+          delayMicroseconds(DELAYMCRO);
 
   }
-//startCarriageMotor();
+startCarriageMotor();
 
 }
 void activateTorqueMotor()
@@ -108,31 +113,31 @@ void activateTorqueMotor()
   //delay(1000);
   for(int go = 0; go < 5; go++)
   {
-//      torqueMotor.setSpeed(50);
-Serial.println("Torque...");
-    delay(250);
+//      torqueMotor.setSpeed(TRPM);
+    Serial.println("Torque...");
+    delay(DELAYMILLI);
   }
 
 //
   Serial.println("Leaving. /n");
-//   torqueMotor.setSpeed(0);
-//    delay(250);
+    torqueMotor.setSpeed(STOP);
+    delay(DELAYMILLI);
     keepLooking = true;
-//articulationSystemBackward();
+ articulationSystemBackward();
 }
 void startCarriageMotor()
  {
   Serial.println("\n\n\n");
   Serial.println("About to go look for location of next bolt...");
-  //delay(1000);
-  carriageMotor.setSpeed(70);
-    delay(250);
+  
+  carriageMotor.setSpeed(CRPM);
+    delay(DELAYMILLI);
   Serial.println("Leaving.");
   keepLooking = true;
  }
 void setup() {
   TCCR2B = TCCR2B & 0b11111000 | 0x01;  // set 31KHz PWM to prevent motor noise
-  // dont remember why I commented this out. will look into later
+// dont remember why I commented this out. will look into later
 //  pinMode(ENCODER0PINA, INPUT);
 //  pinMode(ENCODER0PINB, INPUT);
 
@@ -145,7 +150,7 @@ void setup() {
   pinMode(MotEnable, OUTPUT);
   pinMode(MotDir, OUTPUT); 
 
-  Serial.begin(9600); //initialize serial communication
+  Serial.begin(9600); //initialize serial communication to enable diagnostic output
 
   pinMode(ENCODER0PINA, INPUT_PULLUP); 
   pinMode(ENCODER0PINB, INPUT_PULLUP);
@@ -156,10 +161,9 @@ void setup() {
   attachInterrupt(3, updateEncoder, RISING); 
     
   myPID.SetMode(AUTOMATIC);   //set PID in Auto mode
-  myPID.SetSampleTime(1);  // refresh rate of PID controller
-  myPID.SetOutputLimits(-RPM, RPM); //here change in value reflect change in speed limits of motor 
- // enable diagnostic output
-  Serial.begin (9600);
+  myPID.SetSampleTime(SAMPLETIME);  // refresh rate of PID controller in milliseconds
+  myPID.SetOutputLimits(-CRPM, CRPM); //here change in value reflect change in speed limits of motor 
+
   Serial.println("\n\n\n");
   Serial.println("Ready.");
 
@@ -302,8 +306,8 @@ if(abs((map(encoder0Position, 0, 2000, 0, MAPval))) == positions[next])
  {
   locationFound = true;
   // This stays
-  carriageMotor.setSpeed(0);
-  delay(250);
+  carriageMotor.setSpeed(STOP);
+  delay(DELAYMILLI);
  }
 
   interruptsReceived++;
