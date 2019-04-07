@@ -131,7 +131,7 @@ void startCarriageMotor()
   Serial.println("About to go look for location of next bolt...");
   
   carriageMotor.setSpeed(CRPM);
-    delay(DELAYMILLI);
+  delay(DELAYMILLI);
   Serial.println("Leaving.");
   keepLooking = true;
  }
