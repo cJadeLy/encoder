@@ -30,13 +30,13 @@
 // next is a control variable that is used as a bounds check for the position array
 short next = 0; 
 // scale each bolt location to allow a threshold greater than one degree precision 
-int bolt1 = map(180,0, 360, 0, MAPval);
-int bolt2 = map(270,0, 360, 0, MAPval);
-int bolt3 = map(90,0, 360, 0, MAPval);
-int bolt4 = map(135,0, 360, 0, MAPval);
-int bolt5 = map(315,0, 360, 0, MAPval);
-int bolt6 = map(45,0, 360, 0, MAPval);
-int bolt7 = map(225,0, 360, 0, MAPval);
+int bolt1 = map(1000,0, 2000, 0, MAPval);
+int bolt2 = map(1500,0, 2000, 0, MAPval);
+int bolt3 = map(500,0, 2000, 0, MAPval);
+int bolt4 = map(750,0, 2000, 0, MAPval);
+int bolt5 = map(1750,0, 2000, 0, MAPval);
+int bolt6 = map(250,0, 2000, 0, MAPval);
+int bolt7 = map(1250,0, 2000, 0, MAPval);
 
 // stuff those values into this array to iterate over
 int positions[8] = {bolt1,bolt2, bolt3, bolt4, bolt5, bolt6, bolt7, 0};
