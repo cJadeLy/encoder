@@ -11,19 +11,19 @@
 
 
 #define MotEnable 9 //Motor Enamble pin Runs on PWM signal
-#define MotDir  10  // Motor Direction pin
+#define MotDir  6  // Motor Direction pin
 
 #define ENCODER0PINA         20      // this pin needs to support interrupts
-#define ENCODER0PINB         17      
+#define ENCODER0PINB         17      // this pin does not need to support interrupts
 #define CLOCKWISE            1       // direction constant
 #define COUNTER_CLOCKWISE    2       // direction constant
 #define REVOLUTIONS          10      // 30 = a distance of 2 inches
 #define CRPM                 30      // for carriage motor speed
-#define TRPM                 50      // for torque motor speed
+#define TRPM                 30      // for torque motor speed
 #define SRPM                 200     // for stepper motor speed
 #define DELAYMILLI           250     // set millisecond delay (used for torque and carriage)
 #define DELAYMCRO            10      // set microsecond delay (used for stepper)
-#define MAPval               45      // forgiving precision for encoder that maps 0 - 2000 to 0 - MAPval
+#define MAPval               90      // forgiving precision for encoder that maps 0 - 2000 to 0 - MAPval
 #define CPR                  2000    // Encoder Cycles per revolution.
 #define STOP                 0       
 #define SAMPLETIME           1       // set sample time to refresh PID in milliseconds
@@ -71,9 +71,9 @@ PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT);
 
 // Configure the motor driver.
 // Create Instance of CytronMD library for torque motor
-CytronMD torqueMotor(PWM_DIR, 6, 7);  // PWM = Pin 6, DIR = Pin 7.
+CytronMD torqueMotor(PWM_DIR, 10, 7);  // PWM = Pin 6, DIR = Pin 7.
 // Create Instance of CytronMD library for carriage motor
-CytronMD carriageMotor(PWM_DIR, 9, 10);  // PWM = Pin 9, DIR = Pin 10.
+CytronMD carriageMotor(PWM_DIR, 9, 6);  // PWM = Pin 9, DIR = Pin 10.
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 35, 37, 39, 41);
@@ -108,31 +108,34 @@ startCarriageMotor();
 }
 void activateTorqueMotor()
 {
-    Serial.println("\n\n\n");
-  Serial.println("Torque...");
+    //Serial.println("\n\n\n");
+  //Serial.println("Torque...");
   //delay(1000);
-  for(int go = 0; go < 5; go++)
-  {
-//      torqueMotor.setSpeed(TRPM);
-    Serial.println("Torque...");
-    delay(DELAYMILLI);
-  }
+    torqueMotor.setSpeed(TRPM);
+    delay(1000);
+//  for(int go = 0; go < 5; go++)
+//  {
+//    
+//   // Serial.println("Torque...");
+//    delay(DELAYMILLI);
+//  }
 
 //
-  Serial.println("Leaving. /n");
+ // Serial.println("Leaving. /n");
     torqueMotor.setSpeed(STOP);
     delay(DELAYMILLI);
-    keepLooking = true;
- articulationSystemBackward();
+   // keepLooking = true;
+ //articulationSystemBackward();
+ startCarriageMotor();
 }
 void startCarriageMotor()
  {
-  Serial.println("\n\n\n");
-  Serial.println("About to go look for location of next bolt...");
-  
-  carriageMotor.setSpeed(CRPM);
-  delay(DELAYMILLI);
-  Serial.println("Leaving.");
+//  Serial.println("\n\n\n");
+//  Serial.println("About to go look for location of next bolt...");
+//  
+//  carriageMotor.setSpeed(CRPM);
+//  delay(DELAYMILLI);
+//  Serial.println("Leaving.");
   keepLooking = true;
  }
 void setup() {
@@ -143,10 +146,10 @@ void setup() {
 
   pinMode(6, OUTPUT);
   pinMode(7, OUTPUT);
-  pinMode(35, OUTPUT);
-  pinMode(37, OUTPUT);
-  pinMode(39, OUTPUT);
-  pinMode(41, OUTPUT);
+//  pinMode(35, OUTPUT);
+//  pinMode(37, OUTPUT);
+//  pinMode(39, OUTPUT);
+//  pinMode(41, OUTPUT);
   pinMode(MotEnable, OUTPUT);
   pinMode(MotDir, OUTPUT); 
 
@@ -179,7 +182,7 @@ void loop()
 if (locationFound)
   {
 
-    Serial.println("FOUND LOCATION?");
+//    Serial.println("FOUND LOCATION?");
 //    Serial.print(encoder0Position, DEC);
 //    Serial.print("\t");
 //    Serial.print(currentDirection == CLOCKWISE ? "clockwise" : "counter-clockwise");
@@ -215,10 +218,10 @@ if (locationFound)
     }
     else
     {
-      Serial.print("Nope.. not good enough value: \t");
-      Serial.println((map(encoder0Position, 0, 2000, 0, MAPval)));
-      Serial.print("actual value (that was mapped): \t");
-      Serial.println(encoder0Position);
+//      Serial.print("Nope.. not good enough value: \t");
+//      Serial.println((map(encoder0Position, 0, 2000, 0, MAPval)));
+//      Serial.print("actual value (that was mapped): \t");
+//      Serial.println(encoder0Position);
     }
   }
    // debug stuff
@@ -256,15 +259,15 @@ void pwmOut(int out)
 {                               
   if (out > 0)
   { 
-    Serial.println("setting motor speed to: ");
-    Serial.println(out);   
+   // Serial.println("setting motor speed to: ");
+    //Serial.println(out);   
     analogWrite(MotEnable, out);         // Enabling motor enable pin to reach the desire angle
     forward();                           // calling motor to move forward
   }
   else
   {
-    Serial.println("setting motor speed to: ");
-    Serial.println(out); 
+  //  Serial.println("setting motor speed to: ");
+   // Serial.println(out); 
     analogWrite(MotEnable, abs(out));                        
     reverse();                            // calling motor to move reverse
   }
