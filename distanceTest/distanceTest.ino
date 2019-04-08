@@ -18,7 +18,7 @@
 #define CLOCKWISE            1       // direction constant
 #define COUNTER_CLOCKWISE    2       // direction constant
 #define REVOLUTIONS          10      // 30 = a distance of 2 inches
-#define CRPM                 35      // for carriage motor speed
+#define CRPM                 30      // for carriage motor speed
 #define TRPM                 30      // for torque motor speed
 #define SRPM                 200     // for stepper motor speed
 #define DELAYMILLI           250     // set millisecond delay (used for torque and carriage)
@@ -109,10 +109,10 @@ startCarriageMotor();
 void activateTorqueMotor()
 {
     //Serial.println("\n\n\n");
-  //Serial.println("Torque...");
+  Serial.println("Torque...");
   //delay(1000);
-    torqueMotor.setSpeed(TRPM);
-    delay(1000);
+  //  torqueMotor.setSpeed(TRPM);
+    delay(2000);
 //  for(int go = 0; go < 5; go++)
 //  {
 //    
@@ -122,7 +122,7 @@ void activateTorqueMotor()
 
 //
  // Serial.println("Leaving. /n");
-    torqueMotor.setSpeed(STOP);
+    //torqueMotor.setSpeed(STOP);
     delay(DELAYMILLI);
    // keepLooking = true;
  //articulationSystemBackward();
@@ -164,7 +164,7 @@ void setup() {
   attachInterrupt(3, updateEncoder, RISING); 
     
   myPID.SetMode(AUTOMATIC);   //set PID in Auto mode
-  myPID.SetSampleTime(SAMPLETIME);  // refresh rate of PID controller in milliseconds
+  myPID.SetSampleTime(0.5);  // refresh rate of PID controller in milliseconds
   myPID.SetOutputLimits(-CRPM, CRPM); //here change in value reflect change in speed limits of motor 
 
   Serial.println("\n\n\n");
@@ -173,114 +173,132 @@ void setup() {
  // final code will call articulation system. testing sometimes requires other behavior
  // startCarriageMotor();
  // articulationSystemBackward();
- activateTorqueMotor();
+ //activateTorqueMotor();
+ delay(2000);
+ next = 0;
+ carriageMotor.setSpeed(30);
 }
 
 void loop()
 {
-
-if (locationFound)
+  //next++;
+  
+  if(locationFound)
   {
-
-//    Serial.println("FOUND LOCATION?");
-//    Serial.print(encoder0Position, DEC);
-//    Serial.print("\t");
-//    Serial.print(currentDirection == CLOCKWISE ? "clockwise" : "counter-clockwise");
-
-    // did we really find the location? If not let PID handle it, otherwise we got lucky so here we are 
-    // Dont' worry Reed there is no offset this is actual location compared to a location PID would find acceptable
-    if(interruptsReceived >= 1700 && interruptsReceived <=2020)
-    {
-      carriageMotor.setSpeed(0);
-      delay(250);
-       // reset location found  and disable other functions that are not desired when we are at a bolt location
-       locationFound = false;
-       keepLooking = false;
-       // debugging and data gathering 
-       Serial.println("YES! position that mapped was:  ");
-       Serial.println(encoder0Position);
-       Serial.println("cycles completed: ");
-       Serial.println(interruptsReceived,DEC);
-
-       // dont go out of bounds in our positions array! C be dangerous
-       if(next == 7)
-       {
-        next = 0;
-       }
-       else
-       {
-        next++;
-       }
-       
-       // debugging and data gathering 
-       Serial.println("bolt location that was found:  ");
-       Serial.println(next);
-       // final code will call articulation system, but for now we just need to do something other than sit here 
-       if(next == 0)
-       {
-       activateTorqueMotor();
-       }
-    }
-    else if(interruptsReceived > 2020)
-    {
-     Serial.print("We overshot: \t");
-
-       Serial.println("cycles completed: ");
-       Serial.println(interruptsReceived,DEC);
-//      Serial.print("actual value (that was mapped): \t");
-//      Serial.println(encoder0Position);
-    }
+    Serial.println(interruptsReceived,DEC);
+    Serial.println(encoder0Position, DEC);
+    locationFound = false;
   }
-   // debug stuff
-//  if (encoder0Position !=  previousPosition && keepLooking == true)
+//
+//if (locationFound)
 //  {
 //
-////    Serial.println("Current Position: ");
+////    Serial.println("FOUND LOCATION?");
 ////    Serial.print(encoder0Position, DEC);
 ////    Serial.print("\t");
 ////    Serial.print(currentDirection == CLOCKWISE ? "clockwise" : "counter-clockwise");
-////    Serial.print("\t");
-////    Serial.println(interruptsReceived, DEC);
 //
-//      previousPosition = encoder0Position;
+//    // did we really find the location? If not let PID handle it, otherwise we got lucky so here we are 
+//    // Dont' worry Reed there is no offset this is actual location compared to a location PID would find acceptable
+//    if(interruptsReceived >= 1700 && interruptsReceived <=2020)
+//    if(encoder0Position == 1800)
+//    {
+////      carriageMotor.setSpeed(0);
+////      delay(250);
+//       // reset location found  and disable other functions that are not desired when we are at a bolt location
+//       locationFound = false;
+//       keepLooking = false;
+////       // debugging and data gathering 
+////       Serial.print(currentDirection == CLOCKWISE ? "clockwise" : "counter-clockwise");
+////
+////       Serial.println("YES! position that mapped was:  ");
+////       Serial.println(encoder0Position);
+////       Serial.println("cycles completed: ");
+//      // Serial.println(interruptsReceived,DEC);
 //
+//       // dont go out of bounds in our positions array! C be dangerous
+//       if(next == 7)
+//       {
+//        next = 0;
+//       }
+//       else
+//       {
+//        next++;
+//       }
+//       
+//       // debugging and data gathering 
+////Serial.println("bolt location that was found:  ");
+//  //     Serial.println(next);
+//       // final code will call articulation system, but for now we just need to do something other than sit here 
+//       if(next == 0)
+//       {
+//       activateTorqueMotor();
+//       }
+//    }
+////    else if(interruptsReceived > 2020)
+////    {
+////     Serial.print("We overshot: \t");
+////
+////       Serial.println("cycles completed: ");
+////       Serial.println(interruptsReceived,DEC);
+//////      Serial.print("actual value (that was mapped): \t");
+//////      Serial.println(encoder0Position);
+////    }
 //  }
-
-   
-
-  // man I dont remember why this is here so I am leaving it! Ill figure it out later
-  input = encoder0Position;            
-
-  myPID.Compute();  // calculate new output
- 
-// only do this stuff if COBOT is not busy with other stuff
-if(keepLooking == true && (interruptsReceived < 2020))
-{
- // Serial.println(interruptsReceived, DEC);
-  setpoint = positions[next]; 
-    pwmOut(output);  
-}
-else
-{
-  //Serial.println("ive been told to stop forever");
-  carriageMotor.setSpeed(0);
-}
-  
-  
+//   // debug stuff
+////  if (encoder0Position !=  previousPosition && keepLooking == true)
+////  {
+////
+//////    Serial.println("Current Position: ");
+//////    Serial.print(encoder0Position, DEC);
+//////    Serial.print("\t");
+//////    Serial.print(currentDirection == CLOCKWISE ? "clockwise" : "counter-clockwise");
+//////    Serial.print("\t");
+//////    Serial.println(interruptsReceived, DEC);
+////
+////      previousPosition = encoder0Position;
+////
+////  }
+//
+//   
+//
+//  // man I dont remember why this is here so I am leaving it! Ill figure it out later
+////  input = encoder0Position;            
+//input = interruptsReceived;            
+//
+//  myPID.Compute();  // calculate new output
+// //Serial.println(output);
+//// only do this stuff if COBOT is not busy with other stuff
+//if(keepLooking == true && (interruptsReceived < 1800))
+//{
+//  Serial.println(interruptsReceived, DEC);
+////  setpoint = positions[next];
+//setpoint = 1800; 
+//    pwmOut(output);  
+//}
+//else if(interruptsReceived > 1800)
+//{
+//
+//  //Serial.println("ive been told to stop forever");
+//  carriageMotor.setSpeed(0);
+//    Serial.println(interruptsReceived, DEC);
+//}
+//  
+//  
 }
 void pwmOut(int out)
 {                               
   if (out > 0)
   { 
-   // Serial.println("setting motor speed to: ");
-    //Serial.println(out);   
+//    Serial.println("setting motor speed to: ");
+//    Serial.println(out);   
     analogWrite(MotEnable, out);         // Enabling motor enable pin to reach the desire angle
     forward();                           // calling motor to move forward
   }
   else
   {
-  //  Serial.println("setting motor speed to: ");
-   // Serial.println(out); 
+//    Serial.println("setting motor speed to: ");
+//    Serial.println(out); 
     analogWrite(MotEnable, abs(out));                        
     reverse();                            // calling motor to move reverse
   }
@@ -301,21 +319,21 @@ void updateEncoder()
   int a = digitalRead(ENCODER0PINA);
   int b = digitalRead(ENCODER0PINB);
  
-  if (a == b )
-  {
-    // b is leading a (counter-clockwise)
-    encoder0Position--;
-    currentDirection = COUNTER_CLOCKWISE;
-  }
-  else
-  {
-    // a is leading b (clockwise)
-    encoder0Position++;
-    currentDirection = CLOCKWISE;
-  }
- 
-  // track 0 to 1999
-  encoder0Position = encoder0Position % CPR;
+//  if (a == b )
+//  {
+//    // b is leading a (counter-clockwise)
+//    encoder0Position--;
+//    currentDirection = COUNTER_CLOCKWISE;
+//  }
+//  else
+//  {
+//    // a is leading b (clockwise)
+//    encoder0Position++;
+//    currentDirection = CLOCKWISE;
+//  }
+// 
+//  // track 0 to 1999
+//  encoder0Position = encoder0Position % CPR;
  // comment out for now
 // changing positions[next] to setspeed MAY improve accuracy. but I gotta think more. 
 //if(abs((map(encoder0Position, 0, 2000, 0, MAPval))) == positions[next])
@@ -329,6 +347,7 @@ void updateEncoder()
   interruptsReceived++;
   if(interruptsReceived == 1800)
   { 
+    encoder0Position = interruptsReceived;
   locationFound = true;
   // This stays
   carriageMotor.setSpeed(STOP);
