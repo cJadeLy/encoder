@@ -18,7 +18,7 @@
 #define CLOCKWISE            1       // direction constant
 #define COUNTER_CLOCKWISE    2       // direction constant
 #define REVOLUTIONS          10      // 30 = a distance of 2 inches
-#define CRPM                 30      // for carriage motor speed
+#define CRPM                 35      // for carriage motor speed
 #define TRPM                 30      // for torque motor speed
 #define SRPM                 200     // for stepper motor speed
 #define DELAYMILLI           250     // set millisecond delay (used for torque and carriage)
@@ -189,8 +189,10 @@ if (locationFound)
 
     // did we really find the location? If not let PID handle it, otherwise we got lucky so here we are 
     // Dont' worry Reed there is no offset this is actual location compared to a location PID would find acceptable
-    if(interruptsReceived >= 9900 && interruptsReceived <=10000)
+    if(interruptsReceived >= 1700 && interruptsReceived <=2020)
     {
+      carriageMotor.setSpeed(0);
+      delay(250);
        // reset location found  and disable other functions that are not desired when we are at a bolt location
        locationFound = false;
        keepLooking = false;
@@ -214,9 +216,12 @@ if (locationFound)
        Serial.println("bolt location that was found:  ");
        Serial.println(next);
        // final code will call articulation system, but for now we just need to do something other than sit here 
+       if(next == 0)
+       {
        activateTorqueMotor();
+       }
     }
-    else if(interruptsReceived > 10000)
+    else if(interruptsReceived > 2020)
     {
      Serial.print("We overshot: \t");
 
@@ -247,12 +252,18 @@ if (locationFound)
   input = encoder0Position;            
 
   myPID.Compute();  // calculate new output
-  
+ 
 // only do this stuff if COBOT is not busy with other stuff
-if(keepLooking)
+if(keepLooking == true && (interruptsReceived < 2020))
 {
+ // Serial.println(interruptsReceived, DEC);
   setpoint = positions[next]; 
     pwmOut(output);  
+}
+else
+{
+  //Serial.println("ive been told to stop forever");
+  carriageMotor.setSpeed(0);
 }
   
   
@@ -316,7 +327,7 @@ void updateEncoder()
 // }
 
   interruptsReceived++;
-  if(interruptsReceived == 9900)
+  if(interruptsReceived == 1800)
   { 
   locationFound = true;
   // This stays
