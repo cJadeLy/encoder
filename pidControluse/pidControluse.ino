@@ -18,7 +18,7 @@
 #define CLOCKWISE            1       // direction constant
 #define COUNTER_CLOCKWISE    2       // direction constant
 #define REVOLUTIONS          10      // 30 = a distance of 2 inches
-#define CRPM                 30      // for carriage motor speed
+#define CRPM                 35      // for carriage motor speed
 #define TRPM                 30      // for torque motor speed
 #define SRPM                 200     // for stepper motor speed
 #define DELAYMILLI           250     // set millisecond delay (used for torque and carriage)
@@ -54,6 +54,7 @@ int previousPosition = 0;
 // logic control
 bool locationFound = false;
 bool keepLooking = true;
+bool stopForever = false;
 
 // track direction: 0 = counter-clockwise; 1 = clockwise
 short currentDirection = CLOCKWISE;
@@ -109,10 +110,10 @@ startCarriageMotor();
 void activateTorqueMotor()
 {
     //Serial.println("\n\n\n");
-  //Serial.println("Torque...");
-  //delay(1000);
-    torqueMotor.setSpeed(TRPM);
-    delay(1000);
+  Serial.println("Torque...");
+  delay(2000);
+   // torqueMotor.setSpeed(TRPM);
+    //delay(1000);
 //  for(int go = 0; go < 5; go++)
 //  {
 //    
@@ -122,8 +123,8 @@ void activateTorqueMotor()
 
 //
  // Serial.println("Leaving. /n");
-    torqueMotor.setSpeed(STOP);
-    delay(DELAYMILLI);
+    //torqueMotor.setSpeed(STOP);
+    //delay(DELAYMILLI);
    // keepLooking = true;
  //articulationSystemBackward();
  startCarriageMotor();
@@ -207,14 +208,23 @@ if (locationFound)
        }
        else
        {
+       pass[next]++;
+   
         next++;
        }
-       
+       if(interruptsReceived > 5000)
+       {
+          stopForever = true;
+       }
        // debugging and data gathering 
        Serial.println("bolt location that was found:  ");
        Serial.println(next);
        // final code will call articulation system, but for now we just need to do something other than sit here 
+       if(!stopForever)
+       {
+        
        activateTorqueMotor();
+       }
     }
     else
     {
@@ -235,7 +245,7 @@ if (locationFound)
 //    Serial.print("\t");
 //    Serial.println(interruptsReceived, DEC);
 
-//      previousPosition = encoder0Position;
+      previousPosition = encoder0Position;
 
   }
 
@@ -245,9 +255,12 @@ if (locationFound)
   input = encoder0Position;            
 
   myPID.Compute();  // calculate new output
-  
+  if(stopForever)
+  {
+    carriageMotor.setSpeed(0);
+  }
 // only do this stuff if COBOT is not busy with other stuff
-if(keepLooking)
+if(keepLooking == true)
 {
   setpoint = positions[next]; 
     pwmOut(output);  
@@ -260,14 +273,14 @@ void pwmOut(int out)
   if (out > 0)
   { 
    // Serial.println("setting motor speed to: ");
-    //Serial.println(out);   
+  //  Serial.println(out);   
     analogWrite(MotEnable, out);         // Enabling motor enable pin to reach the desire angle
     forward();                           // calling motor to move forward
   }
   else
   {
   //  Serial.println("setting motor speed to: ");
-   // Serial.println(out); 
+//Serial.println(out); 
     analogWrite(MotEnable, abs(out));                        
     reverse();                            // calling motor to move reverse
   }
