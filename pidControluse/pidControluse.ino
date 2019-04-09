@@ -144,10 +144,12 @@ void setup() {
 // torque pwm and dir pins.. just dont have #defined names. // TODO: make them #defined 
   pinMode(10, OUTPUT);
   pinMode(7, OUTPUT);
+  // stepper motor pins.. just dont have #defined names. // TODO: make them #defined 
 //  pinMode(35, OUTPUT);
 //  pinMode(37, OUTPUT);
 //  pinMode(39, OUTPUT);
 //  pinMode(41, OUTPUT);
+// carriage motor pins. Will make names more unique/obvious when I define other pins
   pinMode(MotEnable, OUTPUT);
   pinMode(MotDir, OUTPUT); 
 
