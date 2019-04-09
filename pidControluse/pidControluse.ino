@@ -64,7 +64,7 @@ const int stepsPerRevolution = 200;
 
 // PID //TODO: explain constants
 double kp = .5 , ki = 1 , kd = .5; //kd prev vals: 1; 0.01;  kp prev vals: = 5, 1 KP = 2 BADD (WHEN KI = 1 AND KD = .5)
-// BEST SO FAR might be kp = 1, ki = 1, kd = .5
+// BEST SO FAR might be kp = .5, ki = 1, kd = .5
 // see details in ardiono PID library files 
 double input = 0, output = 0, setpoint = 0;
 // Create Instance of PID library
@@ -141,11 +141,8 @@ void startCarriageMotor()
  }
 void setup() {
   TCCR2B = TCCR2B & 0b11111000 | 0x01;  // set 31KHz PWM to prevent motor noise
-// dont remember why I commented this out. will look into later
-//  pinMode(ENCODER0PINA, INPUT);
-//  pinMode(ENCODER0PINB, INPUT);
-
-  pinMode(6, OUTPUT);
+// torque pwm and dir pins.. just dont have #defined names. // TODO: make them #defined 
+  pinMode(10, OUTPUT);
   pinMode(7, OUTPUT);
 //  pinMode(35, OUTPUT);
 //  pinMode(37, OUTPUT);
@@ -208,10 +205,10 @@ if (locationFound)
        }
        else
        {
-       pass[next]++;
-   
         next++;
        }
+       // This code will be used to test on the floor with the chain and i dont want the COBOT to eat my hand so I am letting it visit each bolt one time
+       // and it should visit each bolt after 5,441 cycles but I dont trust the cobot so im making sure this dude stops. He is guilty until proven innocent
        if(interruptsReceived > 5000)
        {
           stopForever = true;
@@ -249,12 +246,13 @@ if (locationFound)
 
   }
 
-   
-
-  // man I dont remember why this is here so I am leaving it! Ill figure it out later
+  // This updates PID signal so that PID can PID in a more PID sorta way
+  // (input gets mathed and then output tells PID stuff)
   input = encoder0Position;            
 
   myPID.Compute();  // calculate new output
+  
+  // If stopForever is true then you know.. we wanna stop forever
   if(stopForever)
   {
     carriageMotor.setSpeed(0);
