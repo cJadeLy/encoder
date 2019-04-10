@@ -68,18 +68,66 @@ double kp = .5 , ki = 1 , kd = .5; //kd prev vals: 1; 0.01;  kp prev vals: = 5, 
 // see details in ardiono PID library files 
 double input = 0, output = 0, setpoint = 0;
 // Create Instance of PID library
+// Using Arduinos PID library. PID is a proportional–integral–derivative control method that automatically applies accurate and responsive correction to a control function
+// Our control function is gathering data from an interrupt connected to an optical encoder to determine when we have arrived at the next bolt location
 PID myPID(&input, &output, &setpoint, kp, ki, kd, DIRECT); 
 
 // Configure the motor driver.
 // Create Instance of CytronMD library for torque motor
-CytronMD torqueMotor(PWM_DIR, 10, 7);  // PWM = Pin 6, DIR = Pin 7.
+CytronMD torqueMotor(PWM_DIR, 10, 7);  // PWM = Pin 10, DIR = Pin 7.
 // Create Instance of CytronMD library for carriage motor
-CytronMD carriageMotor(PWM_DIR, 9, 6);  // PWM = Pin 9, DIR = Pin 10.
+CytronMD carriageMotor(PWM_DIR, 9, 6);  // PWM = Pin 9, DIR = Pin 6.
 
 // Create Instance of Stepper library
 Stepper myStepper(stepsPerRevolution, 35, 37, 39, 41);
 
-void articulationSystemForward()
+void activateTorqueMotor()
+{
+    //Serial.println("\n\n\n");
+  Serial.println("Torque...");
+  torqueMotor.setSpeed(TRPM);
+    //delay(1000);
+//  for(int go = 0; go < 5; go++)
+//  {
+//    
+//   // Serial.println("Torque...");
+//    delay(DELAYMILLI);
+//  }
+
+//
+ // Serial.println("Leaving. /n");
+    torqueMotor.setSpeed(STOP);
+    delay(DELAYMILLI);
+   // keepLooking = true;
+ articulationSystemBackward();
+
+}
+void articulationSystemBackward()
+{
+  Serial.println("Articulation System Activated");
+  
+  myStepper.setSpeed(SRPM);
+  for(int i = 0; i < REVOLUTIONS; i++)
+  {
+          myStepper.step(-stepsPerRevolution);
+          delayMicroseconds(DELAYMCRO);
+
+  }
+startCarriageMotor();
+
+}
+
+void startCarriageMotor()
+ {
+//  Serial.println("\n\n\n");
+//  Serial.println("About to go look for location of next bolt...");
+//  
+//  carriageMotor.setSpeed(CRPM);
+//  delay(DELAYMILLI);
+//  Serial.println("Leaving.");
+  keepLooking = true;
+ }
+ void articulationSystemForward()
 {
   
   myStepper.setSpeed(SRPM);
@@ -93,52 +141,6 @@ void articulationSystemForward()
 
 activateTorqueMotor();
 }
-void articulationSystemBackward()
-{
-  Serial.println("/n Articulation System Activated /n");
-  
-  myStepper.setSpeed(SRPM);
-  for(int i = 0; i < REVOLUTIONS; i++)
-  {
-          myStepper.step(-stepsPerRevolution);
-          delayMicroseconds(DELAYMCRO);
-
-  }
-startCarriageMotor();
-
-}
-void activateTorqueMotor()
-{
-    //Serial.println("\n\n\n");
-  Serial.println("Torque...");
-  delay(2000);
-   // torqueMotor.setSpeed(TRPM);
-    //delay(1000);
-//  for(int go = 0; go < 5; go++)
-//  {
-//    
-//   // Serial.println("Torque...");
-//    delay(DELAYMILLI);
-//  }
-
-//
- // Serial.println("Leaving. /n");
-    //torqueMotor.setSpeed(STOP);
-    //delay(DELAYMILLI);
-   // keepLooking = true;
- //articulationSystemBackward();
- startCarriageMotor();
-}
-void startCarriageMotor()
- {
-//  Serial.println("\n\n\n");
-//  Serial.println("About to go look for location of next bolt...");
-//  
-//  carriageMotor.setSpeed(CRPM);
-//  delay(DELAYMILLI);
-//  Serial.println("Leaving.");
-  keepLooking = true;
- }
 void setup() {
   TCCR2B = TCCR2B & 0b11111000 | 0x01;  // set 31KHz PWM to prevent motor noise
 // torque pwm and dir pins.. just dont have #defined names. // TODO: make them #defined 
@@ -170,10 +172,7 @@ void setup() {
   Serial.println("\n\n\n");
   Serial.println("Ready.");
 
- // final code will call articulation system. testing sometimes requires other behavior
- // startCarriageMotor();
- // articulationSystemBackward();
- activateTorqueMotor();
+  activateTorqueMotor();
 }
 
 void loop()
@@ -218,11 +217,10 @@ if (locationFound)
        // debugging and data gathering 
        Serial.println("bolt location that was found:  ");
        Serial.println(next);
-       // final code will call articulation system, but for now we just need to do something other than sit here 
+       // Move forward to bring socket to bolt unless we are done
        if(!stopForever)
        {
-        
-       activateTorqueMotor();
+         articulationSystemForward();
        }
     }
     else
@@ -248,7 +246,7 @@ if (locationFound)
 
   }
 
-  // This updates PID signal so that PID can PID in a more PID sorta way
+  // The encoder position is the control signal being used for PID signal 
   // (input gets mathed and then output tells PID stuff)
   input = encoder0Position;            
 
