@@ -86,7 +86,7 @@ void activateTorqueMotor()
     //Serial.println("\n\n\n");
   Serial.println("Torque...");
   torqueMotor.setSpeed(TRPM);
-    //delay(1000);
+    delay(1000);
 //  for(int go = 0; go < 5; go++)
 //  {
 //    
@@ -171,7 +171,7 @@ void setup() {
 
   Serial.println("\n\n\n");
   Serial.println("Ready.");
-
+//articulationSystemForward();
   activateTorqueMotor();
 }
 
